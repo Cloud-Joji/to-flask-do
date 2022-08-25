@@ -21,6 +21,10 @@ def create_app():
     DATABASE=os.environ.get('FLASK_DATABASE'),
   )
 
+  from . import db
+
+  db.init_app(app)
+  
   @app.route('/hello')
   def hello():
     return 'I love u so much my sweetie kitty baby '
