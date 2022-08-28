@@ -1,4 +1,4 @@
-# Importa MYSQL Connector 
+# Importa MYSQL Connector
 import mysql.connector
 # Importa click, sirve para ejecutar comandos en el terminal
 # Con el podemos crear tablas, relacion entre ellos a traves de
@@ -18,52 +18,62 @@ from .schema import instructions
 
 # Funcion que nos va a permitir obtener la base de datos y tambien
 # el cursor dentro de la app
+
+
 def get_db():
-  # Si no se encuentra el atributo db de g
+    # Si no se encuentra el atributo db dentro de g
     if 'db' not in g:
-    # Creamos nueva propiedad dentro de G que va a contener la conexion a la BD
-      g.db = mysql.connector.connect(
-        host=current_app.config['DATABASE_HOST'],
-        user=current_app.config['DATABASE_USER'],
-        password=current_app.config['DATABASE_PASSWORD'],
-        database=current_app.config['DATABASE']
-      )
+        # Creamos nueva propiedad dentro de G que va a contener la conexion a la BD
+        g.db = mysql.connector.connect(
+            host=current_app.config['DATABASE_HOST'],
+            user=current_app.config['DATABASE_USER'],
+            password=current_app.config['DATABASE_PASSWORD'],
+            database=current_app.config['DATABASE']
+        )
     # Definimos dentro de g la propiedad de c
-    # Queremos acceder a las propiedades como un diccionario, 
+    # Queremos acceder a las propiedades como un diccionario,
     # debemos pasar la propuiedad de dictionary dentro de cursor como true
-      g.c = g.db.cursor(dictionary=True)
-  # cuando llamemos a get_db obtendremos el base de datos y el cursor
+        g.c = g.db.cursor(dictionary=True)
+# cuando llamemos a get_db obtendremos el base de datos y el cursor
     return g.db, g.c
 
 # Funcion para cerrar la base de datos que ejecutaremos para cerrar la base de datos
-# El cual le indicaremos a flask que cierre la conexion al a base de datos 
+# El cual le indicaremos a flask que cierre la conexion al a base de datos
 # al finalizar una operacoin
+
+
 def close_db(e=None):
-  # Llamamos a db para quitarle la propiedad db a g
-  db = g.pop('db', None)
-  # Si db no se encuentra definido significa que nunca llamamos a get_db
-  # si db se encuentra definido se cerrara la base de datos
-  if db is not None:
-    db.close()
+    # Llamamos a db para quitarle la propiedad db a g
+    db = g.pop('db', None)
+    # Si db no se encuentra definido significa que nunca llamamos a get_db
+    # si db se encuentra definido se cerrara la base de datos
+    if db is not None:
+        db.close()
+
 
 def init_db():
-  db, c = get_db()
+    db, c = get_db()
 
-  for i in instructions:
-      c.execute(i)
+    for i in instructions:
+        c.execute(i)
 
-      db.commit()
+    db.commit()
+
+# Define nombre para utilizarlo por consola
+
 
 @click.command('init-db')
+# Para que se ejecute con exito, que utilice el contexto de la app
 @with_appcontext
-
-
 def init_db_command():
-  init_db()
-  click.echo('Base de datos inicializada!')
+    init_db()
+    click.echo('Base de datos inicializada!')
 
 # Funcion que le pasamos como argumento app
-# Que se ejecutara cuando finalice el contexto de la app 
+# Que se ejecutara cuando finalice el contexto de la app
 # Cuando termine de ejecutar una peticion cierra la conexion
+
+
 def init_app(app):
-  app.teardown_appcontext(close_db)
+    app.cli.add_command(init_db_command)
+    app.teardown_appcontext(close_db)
